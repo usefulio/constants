@@ -22,4 +22,23 @@ However feel free to use the `Constant` method directly anywhere in your code, i
   - `options.envName` The name of this variable in the environment, e.g. `KADIRA_DEBUG_API_KEY`
   - `options.settingName` The name of this variable in meteor settings, e.g. `kadira.api_key`, periods are used to split the name so you can specify nested properties.
   - `options.public` Whether this constant should be published to the client. Can only be specified on the server, is always true on the client. The value specified on the server takes priority.
+  - `options.serverSpecific` Setting this varaible via enviroment variables or meteor settings should take precedence over the value in the db, and calls to `Constant.set` should not be propagated to the db.
 - `Constant.set(name, value)` Actively set the value, for example in response to some user action. This value will always override any default value set. This value is stored in the db.
+
+## How does the useful:constants package resolve set conflicts
+The useful:constants package provides multiple ways to set a value:
+
+- Setting the default value `Constant('myValue', 'someDefault')`
+- Passing values in via meteor settings `myValue: 'production variable'`
+- Passing values in via the env `MY_VALUE='staging variable'`
+- Setting values directly `Constant.set('myValue', 'admin preference')`
+- Direct mongodb manipulation
+
+It's important that when these values conflict, we set the value correctly. Here's how the useful:constants packages resolves these conflicts:
+
+The above ways of setting a value are in order of least to greatest precidence, e.g. direct mongodb manipulation will override all the other ways of setting the value. There are a few caveats:
+
+1. Setting the default value more than once will trigger a console warning. The last value will win. The same applies for setting the value more than once via meteor settings & env variables.
+2. Setting the value via both meteor settings & env variables will trigger a console warning.
+3. When setting values directly, the last call to `Constant.set` wins, this is resolved via a timestamp, with the value in the db being the final source of truth.
+4. Setting values directly via `Constant.set` and changing the value via direct mongodb manipulation are equivilent, `Constant.set` just updates the underlying collection with the new value.

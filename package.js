@@ -13,12 +13,20 @@ Package.describe({
 Package.onUse(function(api) {
   api.versionsFrom('1.2.1');
   api.use('ecmascript');
+  api.use('underscore');
+  api.use('mongo');
+
   api.addFiles('constants.js');
+
+  api.export('Constant');
 });
 
 Package.onTest(function(api) {
   api.use('ecmascript');
   api.use('tinytest');
+  api.use('random');
+  api.use('tracker');
+
   api.use('useful:constants');
   api.addFiles('constants-tests.js');
 });
